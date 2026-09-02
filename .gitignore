@@ -1,4 +1,5 @@
 .browser-libs/
 preview-tunnel.log
 first-level-validated.png
+rebuild-*.png
 __pycache__/
