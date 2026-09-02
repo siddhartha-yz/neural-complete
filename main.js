@@ -1,105 +1,67 @@
-import {toast,clearState} from "./core.js";
-import boundary from "./demos/boundary.js";
-import xor from "./demos/xor.js";
-import conv from "./demos/conv.js";
-import latent from "./demos/latent.js";
-import qlearn from "./demos/qlearn.js";
+import {completed,setCompleted,toast,clearSaved} from "./core.js";
+import xorLab from "./demos/xor-lab.js";
+import featureFoundry from "./demos/feature-foundry.js";
+import visionForge from "./demos/vision-forge.js";
+import latentCartographer from "./demos/latent-cartographer.js";
+import policyGarden from "./demos/policy-garden.js";
 
-const demos=[boundary,xor,conv,latent,qlearn];
+const demos=[xorLab,featureFoundry,visionForge,latentCartographer,policyGarden];
 const byId=Object.fromEntries(demos.map(d=>[d.id,d]));
 const app=document.getElementById("app");
-const topCenter=document.getElementById("topCenter");
-const statusText=document.getElementById("statusText");
-let current=null;
-let currentCleanup=null;
+let active=null,cleanup=null;
 
-function completedSet(){
-  try{return new Set(JSON.parse(localStorage.getItem("nc5:completed")||"[]"))}
-  catch{return new Set()}
+function mini(d){
+  if(d.id==="xor-lab")return '<div class="mini-graph"><i></i><i></i><i></i><b></b><b></b><span></span></div>';
+  if(d.id==="feature-foundry")return '<div class="mini-factory"><i>x₁</i><b>²</b><em>+</em><strong>f</strong></div>';
+  if(d.id==="vision-forge")return '<div class="mini-vision"><i></i><i></i><i></i><span></span><span></span></div>';
+  if(d.id==="latent-cartographer")return '<div class="mini-latent"><i></i><b></b><em></em><span></span></div>';
+  return '<div class="mini-garden"><i></i><i></i><i></i><i></i><b>→</b><span>◎</span></div>';
 }
-function markCompleted(id){
-  const s=completedSet();
-  s.add(id);
-  localStorage.setItem("nc5:completed",JSON.stringify([...s]));
-  renderTopMeta();
+export function home(){
+  if(cleanup){cleanup();cleanup=null}
+  active=null;
+  if(location.hash)history.replaceState(null,"",location.pathname+location.search);
+  const done=completed();
+  app.innerHTML=`
+    <section class="launcher">
+      <header class="launch-head">
+        <div class="brand90"><div class="brandbars"><i></i><i></i><i></i></div><div><b>NEURAL COMPLETE</b><span>BUILD THE LEARNING MACHINE</span></div></div>
+        <div class="launch-score"><b>${done.size}/5</b><span>EXPERIMENTS SOLVED</span></div>
+      </header>
+      <div class="launch-hero">
+        <span class="overline">SECOND PROTOTYPE SERIES / STRUCTURE FIRST</span>
+        <h1>这次你不是“调模型”。<br><em>你要把模型造出来。</em></h1>
+        <p>五个实验，五种完全不同的操作空间。共同规则只有一个：开发者给你基础元件，正确结构必须由你自己发现。</p>
+      </div>
+      <div class="launch-grid">
+        ${demos.map((d,i)=>`
+          <button class="launch-card theme-${d.theme}" data-demo="${d.id}">
+            <div class="card-num">${String(i+1).padStart(2,"0")} ${done.has(d.id)?'<span>✓ SOLVED</span>':""}</div>
+            ${mini(d)}
+            <div class="card-copy"><small>${d.verb}</small><h2>${d.title}</h2><span>${d.en}</span><p>${d.card}</p></div>
+            <div class="card-foot"><div>${d.tags.map(t=>`<i>${t}</i>`).join("")}</div><b>ENTER →</b></div>
+          </button>`).join("")}
+      </div>
+      <footer class="launch-foot">
+        <span>真实训练 · hidden evaluation · structural failure · internal probes</span>
+        <a href="./DEMO_90_PLUS_REPORT.md" target="_blank">90+ design contract ↗</a>
+      </footer>
+    </section>`;
+  app.querySelectorAll("[data-demo]").forEach(b=>b.onclick=()=>openDemo(b.dataset.demo));
 }
-function renderTopMeta(){
-  const done=completedSet().size;
-  document.getElementById("buildMeta").textContent=done+"/5 solved · no external ML library";
-}
-function home(){
-  if(currentCleanup){currentCleanup();currentCleanup=null}
-  current=null;
-  if(location.hash) history.replaceState(null,"",location.pathname+location.search);
-  topCenter.textContent="选择一个实验";
-  statusText.textContent="所有训练都在浏览器内真实计算";
-  const done=completedSet();
-  app.innerHTML=
-    '<section class="home">'+
-      '<div class="hero">'+
-        '<span class="eyebrow">NEURAL COMPLETE / FIVE EXPERIMENTS</span>'+
-        '<h1>不要再“模拟机器学习”。<br>让模型真的学。</h1>'+
-        '<p>五个互不相同的成品级实验。参数会从数据或奖励中更新；训练失败也是真失败。你需要改变数据、结构、表示或学习策略，而不是照着公式接线。</p>'+
-      '</div>'+
-      '<div class="demo-grid">'+
-        demos.map((d,i)=>
-          '<article class="demo-card" data-open="'+d.id+'" style="--card-color:'+d.color+'">'+
-            '<span class="index">'+String(i+1).padStart(2,"0")+(done.has(d.id)?" · SOLVED":"")+'</span>'+
-            '<h2>'+d.title+'</h2><span class="en">'+d.en+'</span>'+
-            '<p>'+d.card+'</p>'+
-            '<div class="tags">'+d.tags.map(t=>'<span>'+t+'</span>').join("")+'</div>'+
-            '<div class="go"><span>'+(done.has(d.id)?"再次实验":"进入实验")+'</span><b>→</b></div>'+
-          '</article>'
-        ).join("")+
-      '</div>'+
-      '<div class="home-note"><b>验收规则</b><span>每个 Demo 都必须运行实际学习算法；必须有训练前后可量化差异、失败路径、独立隐藏评测以及可复现实验状态。浏览器刷新不会把训练结果伪造成预制动画。</span></div>'+
-    '</section>';
-  app.querySelectorAll("[data-open]").forEach(n=>n.addEventListener("click",()=>openDemo(n.dataset.open)));
-  renderTopMeta();
-}
-function openDemo(id){
-  const d=byId[id];
-  if(!d){home();return}
-  if(currentCleanup){currentCleanup();currentCleanup=null}
-  current=d;
-  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id);
-  topCenter.textContent=d.code+" · "+d.en.toUpperCase();
-  statusText.textContent=d.status;
-  app.innerHTML='<div class="empty-state"><b>Loading '+d.title+'</b><span>initializing numerical runtime…</span></div>';
+export function openDemo(id){
+  const d=byId[id];if(!d)return home();
+  if(cleanup){cleanup();cleanup=null}
+  active=d;if(location.hash!=="#"+id)history.replaceState(null,"","#"+id);
+  app.innerHTML="";
   const ctx={
-    toast,
-    complete:()=>{markCompleted(id);toast(d.title+"：实验完成","good")},
     home,
-    setStatus:s=>statusText.textContent=s
+    toast,
+    complete:()=>{setCompleted(id);toast(d.title+"：隐藏评测通过","good")},
+    reset:()=>{if(confirm("清空这个实验的结构与训练状态？")){clearSaved(id);openDemo(id)}}
   };
-  currentCleanup=d.mount(app,ctx)||null;
-  renderTopMeta();
+  cleanup=d.mount(app,ctx)||null;
 }
-function resetCurrent(){
-  if(!current){toast("当前没有打开实验");return}
-  if(!confirm("重置「"+current.title+"」的训练状态？"))return;
-  clearState(current.id);
-  openDemo(current.id);
-  toast("已重置当前实验");
-}
-
-document.getElementById("homeBtn").addEventListener("click",home);
-document.getElementById("globalResetBtn").addEventListener("click",resetCurrent);
-const about=document.getElementById("aboutDialog");
-document.getElementById("aboutBtn").addEventListener("click",()=>about.showModal());
-document.getElementById("closeAbout").addEventListener("click",()=>about.close());
-window.addEventListener("hashchange",()=>{
-  const id=location.hash.slice(1);
-  if(id&&id!==current?.id) openDemo(id);
-  else if(!id&&current) home();
-});
-window.__NC5__={
-  demos,
-  openDemo,
-  home,
-  get current(){return current},
-  complete:markCompleted
-};
-const initial=location.hash.slice(1);
-if(initial&&byId[initial]) openDemo(initial);
-else home();
+window.addEventListener("hashchange",()=>{const id=location.hash.slice(1);if(id&&id!==active?.id)openDemo(id);else if(!id&&active)home()});
+window.__NC90__={home,openDemo,demos,get active(){return active}};
+const initial=location.hash.slice(1);initial&&byId[initial]?openDemo(initial):home();

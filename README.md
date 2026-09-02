@@ -1,68 +1,126 @@
 # Neural Complete
 
-一个以“真的让模型学习”为核心的机器学习交互实验项目。
+Neural Complete 是一个以“亲手构造机器学习结构”为核心的教学游戏原型。
 
-当前版本已经完全放弃之前的符号电路 / 手工公式拼装方向，改成 5 个互不相同的成品级 Demo。每个 Demo 都包含真实数值学习过程，参数会由数据或奖励更新，不是预制动画。
+当前版本已经放弃“预制模型 + slider + Train”的 Playground 方向，改成 5 个结构优先的实验。共同规则只有一个：
 
-## 五个 Demo
+> 开发者提供基础元件，玩家自己决定结构；训练、梯度、表示与策略都由当前结构真实产生。
 
-### 01 · Boundary Foundry
-**主题：监督学习 / Logistic Regression**
+## 当前五个 Demo
 
-玩家决定模型能看到什么特征、使用多少训练样本和什么学习率，然后用真实 BCE 梯度下降训练分类器。
+### 01 · XOR Construction Lab
 
-关键现象：
-- 特征表示决定可学习边界的形状；
-- raw features 无法表达环形分类；
-- radial feature 可以；
-- 训练集准确率和隐藏集泛化不是一回事。
+自由神经图编辑器。
 
-### 02 · XOR Workshop
-**主题：MLP / Backpropagation / Nonlinearity**
+玩家可以：
 
-玩家配置隐藏单元数量、激活函数和学习率，让一个小型 MLP 通过真实反向传播学习带抖动的 XOR。
+- 放置 Neuron / Multiply / Add / Square / Abs；
+- 任意接线与删线；
+- 改 activation；
+- freeze / mute 节点；
+- 查看节点 activation、gradient、weight；
+- 单步或批量训练；
+- 在 decision field 上移动 probe；
+- 用新的 noisy XOR hidden set 做最终评测。
 
-关键现象：
-- 多层线性网络仍然等价于线性变换；
-- 非线性隐藏表示是解决 XOR 的核心；
-- 隐藏单元激活可以直接探测；
-- 决策场会随着 backprop 实时变化。
+forward / backward graph 根据玩家当前 DAG 自动生成。
 
-### 03 · Conv Forge
-**主题：CNN / Learned Kernels / Feature Maps**
+已验证的结构性通关方案包括：
 
-网络从随机 3×3 卷积核开始，用分类误差反向训练 kernel、bias 和输出分类器。
+- `x₁ × x₂ → logistic output`
+- `2 → 2 tanh neurons → output`
+- `2 → 3 ReLU neurons → output`
 
-关键现象：
-- 卷积核不是人工写好的 Sobel 模板；
-- kernel 会从数据中形成方向偏好；
-- feature map 可以直接观察；
-- pooling 改变位置不变性的方式；
-- 隐藏集使用新的噪声和线条位置。
+### 02 · Feature Foundry
 
-### 04 · Latent Vault
-**主题：Autoencoder / Unsupervised Learning**
+特征工程工厂。
 
-不给类别标签，只要求网络把 6×6 图像压入低维 bottleneck 后重建。
+`x₁ / x₂` 是原料，Square / Abs / Add / Multiply / Subtract 是加工机器。玩家可以递归生产任意派生 feature，再把自己生产的 feature 拖进 Logistic classifier dock。
 
-关键现象：
-- target 就是 input 本身；
-- 1D bottleneck 无法稳定保存两个独立生成因素；
-- 2D latent 可以显著降低隐藏重构误差；
-- 3D/4D 虽更容易，但不符合压缩目标；
-- 支持 latent interpolation 和潜空间可视化。
+已验证的不同方案：
 
-### 05 · Q-Lab
-**主题：Reinforcement Learning / Q-Learning**
+- `x₁² + x₂²`
+- `x₁²` 与 `x₂²` 分别进入 classifier
+- `|x₁| + |x₂|`
 
-玩家不能直接移动 agent，只能控制 reward、epsilon、alpha、gamma，让策略从经验中学习。
+系统显示 feature class separation、redundancy、训练边界与 hidden generalization。
 
-关键现象：
-- Q-table 从全 0 开始；
-- 每次 transition 都执行 TD update；
-- epsilon 控制 exploration / exploitation；
-- step penalty 会影响路径长度；
-- 最终评测遍历全图安全起点，而不是只检查一条固定路线。
+### 03 · Vision Forge
+
+CNN 光学工作台。
+
+玩家把真正可训练的 3×3 / 5×5 filter 放入 filter bank，并决定每个 feature map 如何聚合。
+
+可观察：
+
+- learned kernel；
+- feature map；
+- pooled response；
+- output weight；
+- kernel gradient；
+- freeze / mute 消融结果。
+
+卷积核从随机参数开始，由最终 BCE 分类误差真实反向传播更新。
+
+### 04 · Latent Cartographer
+
+Masked Autoencoder 潜空间制图室。
+
+玩家不是选择 latent dim 后点 Train，而是直接“画”信息连接：
+
+- 每个 latent channel 能听哪些输入像素；
+- 每个 latent channel 能向哪些重建像素写回。
+
+支持：
+
+- 多 latent channel；
+- connectivity painter；
+- freeze；
+- reconstruction；
+- latent scatter；
+- interpolation；
+- variance / correlation / collapse diagnostics；
+- hidden reconstruction evaluation。
+
+### 05 · Policy Garden
+
+强化学习策略花园。
+
+玩家不能直接移动 agent。玩家构造的是 agent 的“感知世界”：
+
+- ROW
+- COLUMN
+- GOAL ΔX / ΔY
+- GOAL DIR
+- WALL RADAR
+- DANGER
+- LANDMARK REGION
+
+最多把 3 个 sensor chip 装进 brain slots，还可以在环境中放有限的 reward beacon。
+
+Q-table 从 0 开始，真实执行 TD update。改变 sensor 组合会直接改变 state representation 和 Q-table 的地址空间。
+
+## 90+ 评估
+
+正式评分标准：
+
+- [EVALUATION.md](./EVALUATION.md)
+
+上一版试玩反馈与 90+ 设计合同：
+
+- [DEMO_90_PLUS_REPORT.md](./DEMO_90_PLUS_REPORT.md)
+
+当前自主“制作 → 试玩 → 评分 → 反馈 → 修改 → 再试玩”结果：
+
+- [PLAYTEST_90_SCORE.md](./PLAYTEST_90_SCORE.md)
+
+当前最高分：
+
+~~~text
+XOR Construction Lab
+94 / 100
+前三项：47 / 50
+~~~
 
 ## 运行
 
@@ -77,56 +135,43 @@ python3 -m http.server 4173 --bind 127.0.0.1
 http://127.0.0.1:4173
 ~~~
 
-项目为纯前端 ES Modules，不依赖 TensorFlow.js、PyTorch.js 或其他外部 ML 库。所有学习算法都直接在浏览器中实现。
+项目为纯前端 ES Modules，不依赖外部 ML library。学习算法直接在浏览器内执行。
 
 ## 自动验收
+
+真实 UI 端到端试玩：
 
 ~~~bash
 LD_LIBRARY_PATH=/home/ubuntu/workspace/neural-complete/.browser-libs/root/usr/lib/x86_64-linux-gnu \
 /home/ubuntu/local-shell-mcp/.venv/bin/python e2e_check.py
 ~~~
 
-该测试会在真实 Chromium 中验证：
+结构解法多样性：
 
-- 主页存在 5 个独立 Demo；
-- Boundary Foundry：
-  - 弱特征表示失败；
-  - radial feature + 足够样本通过隐藏评测；
-- XOR Workshop：
-  - linear hidden stack 失败；
-  - nonlinear MLP 通过；
-- Conv Forge：
-  - 随机 kernel 失败；
-  - 训练后的 kernel 通过新噪声 / 新位置隐藏集；
-- Latent Vault：
-  - 1D bottleneck 失败；
-  - 2D bottleneck 通过；
-- Q-Lab：
-  - 初始 Q-table 失败；
-  - 训练后全图策略通过；
-- 五个 Demo 的完成状态可持久化；
-- 页面刷新后完成状态仍然存在；
-- 多种桌面 / 窄屏尺寸下无基础布局崩坏；
-- 浏览器 console / page error 为 0。
+~~~bash
+LD_LIBRARY_PATH=/home/ubuntu/workspace/neural-complete/.browser-libs/root/usr/lib/x86_64-linux-gnu \
+/home/ubuntu/local-shell-mcp/.venv/bin/python solution_diversity_check.py
+~~~
+
+验收覆盖：
+
+- 可见 UI 构造，而不是只调用内部接口；
+- 真实训练；
+- hidden/test 分离；
+- 五个 Demo 的成功流程；
+- 至少 3 类结构性不同的有效解；
+- 已知弱结构真实失败；
+- persistence / reload；
+- console / page error；
+- NaN / Inf 防护；
+- 固定 seed 下的可复现实验。
 
 ## 设计原则
 
-1. **必须发生学习**
-   参数、表示或策略必须由训练数据 / reward 更新。
-
-2. **错误配置必须可能失败**
-   不是按一次按钮就永远 PASS。
-
-3. **训练集不是最终答案**
-   每个实验都有独立隐藏评测或全局策略评测。
-
-4. **不同 Demo 不允许只是换皮**
-   五个实验分别覆盖：
-   - 线性监督学习；
-   - 非线性表示学习；
-   - 卷积特征学习；
-   - 无监督表示学习；
-   - 强化学习。
-
-5. **模型内部状态可观察**
-   包括 learned weights、hidden activations、feature maps、latent coordinates、Q-values / policy。
+1. 玩家主要操作对象必须是结构，不是超参数。
+2. 参数必须由 data / gradient / reward 真实更新。
+3. 失败必须留下可调查的内部证据。
+4. train 与 hidden/test 必须分开。
+5. 同一任务至少允许 3 类结构性不同的有效解。
+6. 不同任务应拥有不同的交互空间，不复用统一 Dashboard。
+7. 自动测试只证明“没有作弊”；是否达到 90+ 仍由 `EVALUATION.md` 的人工试玩评分决定。

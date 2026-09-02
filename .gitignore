@@ -1,7 +1,4 @@
 .browser-libs/
 preview-tunnel.log
-first-level-validated.png
-rebuild-*.png
-validation-*.png
-five-smoke.png
+*.png
 __pycache__/

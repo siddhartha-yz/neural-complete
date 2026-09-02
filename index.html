@@ -4,47 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Neural Complete — Five Learning Machines</title>
+  <title>Neural Complete — Build the Learning Machine</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <button class="brand" id="homeBtn" aria-label="返回实验选择">
-        <span class="brand-mark"><i></i><i></i><i></i></span>
-        <span><b>NEURAL COMPLETE</b><small>FIVE LEARNING MACHINES</small></span>
-      </button>
-      <div class="top-center" id="topCenter">选择一个实验</div>
-      <div class="top-actions">
-        <button class="ghost-btn" id="aboutBtn">原理</button>
-        <button class="ghost-btn danger" id="globalResetBtn">重置当前</button>
-      </div>
-    </header>
-
-    <main id="app" class="app"></main>
-
-    <footer class="statusbar">
-      <div><span class="live-dot"></span><b>LOCAL NUMERICAL RUNTIME</b></div>
-      <div id="statusText">所有训练都在浏览器内真实计算</div>
-      <div id="buildMeta">5 demos · no external ML library</div>
-    </footer>
-  </div>
-
-  <dialog id="aboutDialog" class="about-dialog">
-    <div class="dialog-head">
-      <div><span>NEURAL COMPLETE</span><h2>这次真正让参数从数据里学出来。</h2></div>
-      <button id="closeAbout" class="icon-btn" aria-label="关闭">×</button>
-    </div>
-    <p>五个实验分别覆盖监督学习、非线性表示学习、卷积特征学习、无监督表示学习与强化学习。每个实验都运行真实的数值优化或策略更新，不是预制动画。</p>
-    <div class="about-grid">
-      <div><b>01</b><span>Logistic Regression</span><small>梯度下降 · 特征工程 · 泛化</small></div>
-      <div><b>02</b><span>MLP + Backprop</span><small>隐藏层 · 激活函数 · 非线性</small></div>
-      <div><b>03</b><span>Convolution</span><small>可学习卷积核 · 特征图 · 池化</small></div>
-      <div><b>04</b><span>Autoencoder</span><small>瓶颈 · 重构 · 潜在空间</small></div>
-      <div><b>05</b><span>Q-Learning</span><small>奖励 · 探索 · 策略收敛</small></div>
-    </div>
-  </dialog>
-
+  <main id="app"></main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script type="module" src="./main.js"></script>
 </body>
