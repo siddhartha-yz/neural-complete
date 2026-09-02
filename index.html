@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Neural Complete — 第一关：边界初生</title>
+<style>
+:root{
+  --bg:#071016;--panel:#0b171f;--panel2:#0f202a;--line:#203845;--text:#e8f1f4;--muted:#86a0ac;
+  --cyan:#58d7ff;--amber:#ffbd5a;--green:#5ce0a0;--red:#ff6b78;--violet:#b79cff;
+}
+*{box-sizing:border-box} html,body{height:100%} body{margin:0;background:radial-gradient(circle at 55% 15%,#102733 0,#071016 42%,#050b0f 100%);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;overflow:hidden}
+button,input{font:inherit} button{color:inherit}
+.app{height:100vh;display:grid;grid-template-rows:58px 1fr;background-image:linear-gradient(rgba(88,215,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(88,215,255,.025) 1px,transparent 1px);background-size:28px 28px}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(5,12,17,.86);backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:14px}.logo{width:31px;height:31px;border:1px solid #3f6a79;border-radius:8px;display:grid;place-items:center;position:relative;box-shadow:inset 0 0 18px rgba(88,215,255,.1)}
+.logo:before,.logo:after{content:"";position:absolute;background:var(--cyan)}.logo:before{width:15px;height:1px}.logo:after{height:15px;width:1px}
+.brand strong{letter-spacing:.08em;font-size:13px}.brand span{color:var(--muted);font-size:12px;margin-left:4px}
+.top-actions{display:flex;gap:8px;align-items:center}.chip{border:1px solid var(--line);background:#0a151c;color:#9ab0ba;border-radius:999px;padding:5px 9px;font-size:11px}.chip.live{color:var(--green);border-color:rgba(92,224,160,.35)}
+.ghost{border:1px solid var(--line);background:#0a151c;border-radius:7px;padding:6px 10px;cursor:pointer}.ghost:hover{border-color:#416071}
+main{min-height:0;display:grid;grid-template-columns:260px minmax(620px,1fr) 310px;gap:10px;padding:10px}
+.panel{min-height:0;background:linear-gradient(180deg,rgba(13,29,38,.97),rgba(8,20,27,.97));border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden}
+.left,.right{display:flex;flex-direction:column}
+.panel-title{height:42px;padding:0 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;color:#b9cbd2;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.left-content,.right-content{padding:14px;overflow:auto}
+.level-no{font-size:11px;color:var(--cyan);letter-spacing:.12em}.mission h1{font-size:22px;line-height:1.15;margin:6px 0 8px}.mission p{color:#a7bac2;margin:0 0 14px;font-size:13px}
+.objective{border:1px solid #27414d;background:#0b1b23;border-radius:8px;padding:10px 11px;margin-bottom:15px}.objective b{display:block;font-size:12px;margin-bottom:4px}.objective span{color:var(--amber);font-variant-numeric:tabular-nums}
+.steps{display:grid;gap:6px}.step{display:grid;grid-template-columns:24px 1fr;gap:8px;padding:8px;border:1px solid transparent;border-radius:7px;color:#778f99}.step .n{width:22px;height:22px;border:1px solid #2b4550;border-radius:50%;display:grid;place-items:center;font-size:10px}.step b{font-size:12px;display:block}.step small{font-size:11px}.step.active{color:#dce9ed;border-color:#284653;background:#0c1c24}.step.active .n{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 12px rgba(88,215,255,.14)}.step.done{color:#8eb8a5}.step.done .n{color:var(--green);border-color:rgba(92,224,160,.5)}
+.tip{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:#728b95;font-size:11px}.tip strong{color:#9fb5be}
+.center{display:grid;grid-template-rows:42px 168px minmax(250px,1fr) 150px;min-height:0}
+.workspace-title{padding:0 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);color:#a9bdc5;font-size:11px;letter-spacing:.1em}.stage-label{color:var(--cyan);letter-spacing:0}
+.builder{padding:12px 14px;border-bottom:1px solid var(--line);display:grid;grid-template-rows:auto 1fr auto;gap:8px;background:rgba(6,17,23,.45)}
+.pipeline{display:grid;grid-template-columns:108px 20px repeat(4,minmax(105px,1fr));gap:7px;align-items:stretch;min-height:70px}
+.data-node,.slot{border:1px solid #294550;border-radius:8px;background:#0b1c24;position:relative;display:flex;flex-direction:column;justify-content:center;padding:9px;min-width:0}
+.data-node{border-color:#355e6e}.node-kicker{font-size:9px;color:#73909c;letter-spacing:.1em}.node-name{font-weight:650;font-size:13px;margin-top:2px}.node-meta{font-size:10px;color:#7d98a3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.arrow{display:grid;place-items:center;color:#42616e;font-size:17px}
+.slot{border-style:dashed;color:#607b86;text-align:center;cursor:pointer;transition:.15s}.slot.over{border-color:var(--cyan);background:#102733}.slot.filled{border-style:solid;text-align:left;color:var(--text);cursor:default}.slot.wrong{border-color:var(--red);animation:shake .22s}.slot.correct{border-color:#365b69}.remove{position:absolute;top:4px;right:5px;border:0;background:transparent;color:#65808a;cursor:pointer;font-size:13px}
+@keyframes shake{0%,100%{transform:translateX(0)}40%{transform:translateX(-3px)}70%{transform:translateX(3px)}}
+.tray-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.tray{display:flex;gap:7px;min-width:0;overflow-x:auto}.block{min-width:105px;border:1px solid #34515d;background:#10232c;border-radius:7px;padding:7px 8px;cursor:grab;user-select:none}.block:hover{border-color:#527586}.block.used{opacity:.28;pointer-events:none}.block .sig{color:var(--cyan);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px}.block b{display:block;font-size:11px}.connect{border:1px solid rgba(88,215,255,.4);background:#0b2732;color:#a8e9ff;border-radius:7px;padding:8px 11px;cursor:pointer;white-space:nowrap}.connect:disabled{opacity:.28;cursor:not-allowed}.connect:not(:disabled):hover{background:#103643}
+.builder-help{font-size:10px;color:#69838e}
+.visual{display:grid;grid-template-columns:minmax(360px,1.25fr) minmax(260px,.75fr);min-height:0}
+.chart-wrap{min-height:0;position:relative;border-right:1px solid var(--line);padding:10px}.chart-wrap canvas{width:100%;height:100%;display:block;border-radius:8px;background:#07131a}
+.chart-badge{position:absolute;top:18px;left:19px;padding:4px 7px;border:1px solid #2b4955;border-radius:5px;background:rgba(5,15,20,.82);color:#87a3ae;font-size:10px;pointer-events:none}.legend{position:absolute;right:18px;top:18px;display:flex;gap:8px;font-size:9px;color:#89a2ac}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px}.dot.a{background:var(--amber)}.dot.b{background:var(--cyan)}
+.trace{padding:12px;overflow:auto}.trace h3{font-size:11px;color:#8da6b0;letter-spacing:.08em;margin:0 0 8px;font-weight:600}.trace-card{border:1px solid #243f4a;border-radius:7px;padding:9px;margin-bottom:7px;background:#091820;transition:.2s}.trace-card.hot{border-color:rgba(88,215,255,.7);box-shadow:0 0 16px rgba(88,215,255,.08)}.trace-card .label{font-size:10px;color:#6f8994}.trace-card .formula{font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#cfe0e6}.trace-card .value{color:var(--cyan)}.trace-empty{color:#68838e;font-size:11px;padding:12px 4px}
+.controls{border-top:1px solid var(--line);padding:10px 12px;display:grid;grid-template-columns:1fr 220px;gap:12px;background:#08171e}
+.step-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.action{border:1px solid #31505c;background:#0e222b;border-radius:7px;padding:8px;cursor:pointer;text-align:left;position:relative}.action b{display:block;font-size:11px}.action small{color:#6f8994;font-size:9px}.action:disabled{opacity:.26;cursor:not-allowed}.action.ready{border-color:rgba(88,215,255,.6);box-shadow:inset 0 0 16px rgba(88,215,255,.06)}.action.done{border-color:rgba(92,224,160,.34);color:#a7d6bd}.action .key{position:absolute;right:6px;top:5px;font-size:8px;color:#536d78}
+.train-controls{border-left:1px solid var(--line);padding-left:12px}.lr-row{display:flex;justify-content:space-between;font-size:10px;color:#7e99a3}.lr-row b{color:var(--text);font-family:ui-monospace,monospace}input[type=range]{width:100%;accent-color:var(--cyan);margin:5px 0}.auto{width:100%;border:1px solid rgba(183,156,255,.38);background:#1a1830;border-radius:6px;padding:6px;cursor:pointer;font-size:10px}.auto:disabled{opacity:.25;cursor:not-allowed}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}.metric{border:1px solid #263f49;border-radius:7px;padding:8px;background:#091920}.metric span{display:block;color:#6d8791;font-size:9px}.metric b{font:17px ui-monospace,SFMono-Regular,Consolas,monospace}.metric.good b{color:var(--green)}
+.param-table{display:grid;gap:5px;margin-bottom:14px}.param{display:flex;justify-content:space-between;border-bottom:1px solid #18313a;padding:5px 1px;font-size:11px}.param span{color:#718b95}.param b{font-family:ui-monospace,monospace;font-weight:500}
+.inspector-section{margin:12px 0}.inspector-section h3{font-size:10px;color:#76909a;text-transform:uppercase;letter-spacing:.1em;margin:0 0 7px}.sample-box{border:1px solid #29444f;border-radius:7px;padding:9px;background:#0a1a22}.sample-box b{font-family:ui-monospace,monospace}.sample-box small{display:block;color:#718b95;margin-top:3px}
+.log{display:grid;gap:5px}.log-entry{font-size:10px;color:#79939d;border-left:2px solid #27444f;padding-left:7px}.log-entry strong{color:#afc4cc}.log-entry.warn{border-color:var(--amber);color:#c2a56e}.log-entry.ok{border-color:var(--green);color:#8dbda3}
+.overlay{position:fixed;inset:58px 0 0;background:rgba(2,8,12,.82);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:20}.overlay.hidden{display:none}.modal{width:min(640px,calc(100vw - 40px));border:1px solid #31515e;background:linear-gradient(180deg,#10232d,#09161d);border-radius:13px;padding:26px;box-shadow:0 24px 80px rgba(0,0,0,.45)}.modal .eyebrow{font-size:10px;color:var(--cyan);letter-spacing:.16em}.modal h2{font-size:30px;margin:7px 0 10px}.modal p{color:#9db1ba;margin:0 0 16px}.brief{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.brief div{border:1px solid #26424d;border-radius:8px;padding:10px}.brief b{display:block;font-size:11px}.brief span{font-size:10px;color:#758f99}.primary{border:1px solid rgba(88,215,255,.55);background:#10303d;color:#c7f2ff;border-radius:7px;padding:9px 15px;cursor:pointer}.primary:hover{background:#15404f}.victory{border-color:rgba(92,224,160,.45)}.victory .eyebrow{color:var(--green)}.victory h2{font-size:28px}.scoreline{display:flex;gap:8px;margin:16px 0}.score{flex:1;border:1px solid #2a4650;border-radius:8px;padding:9px}.score span{display:block;color:#718b95;font-size:9px}.score b{font:18px ui-monospace,monospace;color:var(--green)}
+.toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,16px);padding:8px 12px;border:1px solid #365764;background:#0b1b23;border-radius:7px;color:#c4d7de;font-size:11px;opacity:0;pointer-events:none;transition:.2s;z-index:30}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1100px){body{overflow:auto}.app{height:auto;min-height:100vh}main{grid-template-columns:220px minmax(600px,1fr)}.right{grid-column:1/-1}.right-content{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px}.center{min-height:760px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo"></div><div><strong>NEURAL COMPLETE</strong><span>/ LAB 01</span></div></div>
+  <div class="top-actions"><span class="chip live" id="modeChip">教学模式</span><span class="chip" id="cycleChip">更新 0 次</span><button class="ghost" id="resetBtn">重置关卡</button></div>
+</header>
+<main>
+  <aside class="panel left">
+    <div class="panel-title"><span>任务终端</span><span>01 / 05</span></div>
+    <div class="left-content">
+      <section class="mission">
+        <div class="level-no">MISSION 01</div><h1>边界初生</h1>
+        <p>训练器被拆散了。重建最小分类器，让它学会把两类数据分开。</p>
+      </section>
+      <div class="objective"><b>通关条件</b><span>准确率 ≥ 94% · Loss ≤ 0.25</span></div>
+      <div class="steps">
+        <div class="step active" id="mission1"><div class="n">1</div><div><b>接通计算图</b><small>把四个模块按训练顺序连接</small></div></div>
+        <div class="step" id="mission2"><div class="n">2</div><div><b>亲手训练</b><small>完整执行 3 次训练循环</small></div></div>
+        <div class="step" id="mission3"><div class="n">3</div><div><b>让模型学会</b><small>观察边界并达到通关指标</small></div></div>
+      </div>
+      <div class="tip"><strong>本关原则：</strong>不会替你隐藏训练过程。每一次 Forward、Loss、Backward 和参数更新都能被观察。</div>
+    </div>
+  </aside>
+
+  <section class="panel center">
+    <div class="workspace-title"><span>NEURAL WORKBENCH</span><span class="stage-label" id="stageLabel">阶段 1 · 搭建</span></div>
+    <div class="builder">
+      <div class="pipeline">
+        <div class="data-node"><span class="node-kicker">INPUT</span><span class="node-name">二维数据</span><span class="node-meta">X [32, 2] · y [32]</span></div>
+        <div class="arrow">→</div>
+        <div class="slot" data-slot="0">插槽 01</div>
+        <div class="slot" data-slot="1">插槽 02</div>
+        <div class="slot" data-slot="2">插槽 03</div>
+        <div class="slot" data-slot="3">插槽 04</div>
+      </div>
+      <div class="tray-row">
+        <div class="tray" id="tray"></div>
+        <button class="connect" id="connectBtn" disabled>接通计算图</button>
+      </div>
+      <div class="builder-help" id="builderHelp">拖拽模块到插槽；也可以点击模块自动放入下一个空位。想一想：模型先输出什么，误差何时产生，谁负责更新参数？</div>
+    </div>
+
+    <div class="visual">
+      <div class="chart-wrap"><canvas id="chart"></canvas><div class="chart-badge" id="chartBadge">当前决策边界 · 尚未训练</div><div class="legend"><span><i class="dot a"></i>类别 0</span><span><i class="dot b"></i>类别 1</span></div></div>
+      <div class="trace">
+        <h3>当前样本 · 数据流显微镜</h3>
+        <div id="traceBody"><div class="trace-empty">接通计算图后，从一个样本开始逐步观察它如何穿过网络。</div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="step-controls">
+        <button class="action" id="forwardBtn" disabled><span class="key">F</span><b>01 Forward</b><small>计算 z 与预测概率</small></button>
+        <button class="action" id="lossBtn" disabled><span class="key">L</span><b>02 Loss</b><small>衡量预测有多错</small></button>
+        <button class="action" id="backwardBtn" disabled><span class="key">B</span><b>03 Backward</b><small>求参数梯度</small></button>
+        <button class="action" id="updateBtn" disabled><span class="key">U</span><b>04 Update</b><small>SGD 改变参数</small></button>
+      </div>
+      <div class="train-controls">
+        <div class="lr-row"><span>学习率 η</span><b id="lrValue">0.45</b></div>
+        <input id="lrSlider" type="range" min="0.01" max="5" step="0.01" value="0.45" />
+        <button class="auto" id="autoBtn" disabled>连续训练 × 10（完成 3 次手动循环后解锁）</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel right">
+    <div class="panel-title"><span>模型监视器</span><span id="statusText">离线</span></div>
+    <div class="right-content">
+      <div>
+        <div class="metric-grid">
+          <div class="metric" id="accMetric"><span>ACCURACY</span><b id="accValue">28.1%</b></div>
+          <div class="metric" id="lossMetric"><span>LOSS</span><b id="lossValue">0.912</b></div>
+        </div>
+        <div class="inspector-section"><h3>可学习参数</h3><div class="param-table">
+          <div class="param"><span>w₁</span><b id="w1Value">-0.8000</b></div>
+          <div class="param"><span>w₂</span><b id="w2Value">+0.4000</b></div>
+          <div class="param"><span>b</span><b id="bValue">+0.0000</b></div>
+        </div></div>
+      </div>
+      <div class="inspector-section"><h3>被观察样本</h3><div class="sample-box"><div>x = <b id="sampleX">[0.50, 0.20]</b></div><div>y = <b id="sampleY">1</b></div><small>点击图中的数据点可切换样本</small></div></div>
+      <div class="inspector-section"><h3>实验日志</h3><div class="log" id="log"></div></div>
+    </div>
+  </aside>
+</main>
+</div>
+
+<div class="overlay" id="introOverlay">
+  <div class="modal">
+    <div class="eyebrow">NEURAL COMPLETE · 第一关</div><h2>边界初生</h2>
+    <p>你面前只有 32 个二维样本和一台被拆散的训练器。目标不是“按下 Train”，而是亲手完成一次学习。</p>
+    <div class="brief">
+      <div><b>先搭</b><span>把计算与训练模块接成完整链路</span></div>
+      <div><b>再看</b><span>逐步观察数值如何在网络中流动</span></div>
+      <div><b>最后学会</b><span>用梯度推动决策边界移动</span></div>
+    </div>
+    <button class="primary" id="startBtn">进入工作台</button>
+  </div>
+</div>
+<div class="overlay hidden" id="victoryOverlay">
+  <div class="modal victory">
+    <div class="eyebrow">MISSION COMPLETE</div><h2>它不是“突然会了”</h2>
+    <p>每一次参数更新都只是沿着梯度给出的方向移动一点点。重复这个循环，原本错误的决策边界才逐渐转向了正确位置。</p>
+    <div class="scoreline"><div class="score"><span>最终准确率</span><b id="finalAcc">—</b></div><div class="score"><span>最终 Loss</span><b id="finalLoss">—</b></div><div class="score"><span>参数更新</span><b id="finalSteps">—</b></div></div>
+    <button class="primary" id="experimentBtn">留在本关自由实验</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const dataset=[
+[-1.3,-0.9,0],[-1.1,-0.2,0],[-0.9,-0.8,0],[-0.8,0.2,0],[-0.7,-0.4,0],[-0.6,0.6,0],[-0.5,-0.1,0],[-0.3,-0.7,0],
+[-0.2,0.1,0],[-0.1,-0.4,0],[0.0,-0.8,0],[0.1,-0.2,0],[0.2,-0.5,0],[-0.4,0.5,0],[-0.9,0.7,0],[-1.2,0.5,0],
+[0.1,0.8,1],[0.3,0.5,1],[0.4,0.9,1],[0.5,0.2,1],[0.6,0.6,1],[0.7,-0.1,1],[0.8,0.3,1],[0.9,0.8,1],
+[1.0,-0.2,1],[1.1,0.4,1],[1.2,0.0,1],[1.3,0.6,1],[0.5,1.1,1],[0.8,1.0,1],[1.2,1.1,1],[0.2,1.2,1]
+];
+const blocks=[
+{id:'linear',name:'Linear 2→1',sig:'z = xW + b',meta:'可学习参数：W, b'},
+{id:'sigmoid',name:'Sigmoid',sig:'p = σ(z)',meta:'把输出压到 0~1'},
+{id:'loss',name:'BCE Loss',sig:'L = BCE(p,y)',meta:'预测与答案比较'},
+{id:'sgd',name:'SGD',sig:'θ ← θ − η∇θ',meta:'沿梯度更新参数'}
+];
+const expected=blocks.map(x=>x.id);
+let slots=[null,null,null,null], stage='build', phase=0, manualCycles=0, updates=0, selected=19;
+let w=[-0.8,0.4], bias=0, lr=.45, lastForward=null,lastLoss=null,lastGrad=null, prevLoss=null, victoryShown=false;
+const $=id=>document.getElementById(id);
+const tray=$('tray'), toast=$('toast');
+function sigmoid(z){return 1/(1+Math.exp(-z))}
+function evaluate(){
+ let loss=0,correct=0,grad=[0,0,0],probs=[];
+ dataset.forEach(([x1,x2,y])=>{
+   const z=x1*w[0]+x2*w[1]+bias,p=sigmoid(z); probs.push(p);
+   loss+=-(y*Math.log(Math.max(p,1e-9))+(1-y)*Math.log(Math.max(1-p,1e-9)));
+   correct+=((p>=.5)?1:0)===y;
+   const e=p-y; grad[0]+=e*x1;grad[1]+=e*x2;grad[2]+=e;
+ });
+ const n=dataset.length; return {loss:loss/n,acc:correct/n,grad:grad.map(g=>g/n),probs};
+}
+function fmt(v,n=4){return (v>=0?'+':'')+v.toFixed(n)}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),1700)}
+function addLog(text,type=''){const el=document.createElement('div');el.className='log-entry '+type;el.innerHTML=text;$('log').prepend(el);while($('log').children.length>7)$('log').lastChild.remove()}
+function renderTray(){
+ tray.innerHTML=''; blocks.forEach(b=>{const used=slots.some(s=>s===b.id);const el=document.createElement('div');el.className='block'+(used?' used':'');el.draggable=!used;el.dataset.id=b.id;el.innerHTML='<span class="sig">'+b.sig+'</span><b>'+b.name+'</b>';el.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',b.id));el.onclick=()=>placeNext(b.id);tray.appendChild(el)})
+}
+function renderSlots(){
+ document.querySelectorAll('.slot').forEach((el,i)=>{
+   const id=slots[i];el.className='slot'+(id?' filled':'');el.innerHTML=id?nodeHtml(blocks.find(b=>b.id===id),i):'插槽 0'+(i+1);
+ });
+ const full=slots.every(Boolean);$('connectBtn').disabled=!full||stage!=='build';renderTray();
+}
+function nodeHtml(b,i){return '<span class="node-kicker">MODULE 0'+(i+1)+'</span><span class="node-name">'+b.name+'</span><span class="node-meta">'+b.sig+'</span><button class="remove" data-rm="'+i+'">×</button>'}
+document.querySelectorAll('.slot').forEach((el,i)=>{
+ el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('over')});el.addEventListener('dragleave',()=>el.classList.remove('over'));
+ el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('over');if(stage!=='build')return;const id=e.dataTransfer.getData('text/plain');placeAt(id,i)});
+ el.addEventListener('click',e=>{const rm=e.target.closest('[data-rm]');if(rm&&stage==='build'){slots[+rm.dataset.rm]=null;renderSlots()}});
+});
+function placeNext(id){if(stage!=='build'||slots.includes(id))return;const i=slots.indexOf(null);if(i>=0)placeAt(id,i)}
+function placeAt(id,i){if(!expected.includes(id)||slots.includes(id))return;if(slots[i])return;slots[i]=id;renderSlots()}
+$('connectBtn').onclick=()=>{
+ const ok=slots.every((x,i)=>x===expected[i]);
+ if(!ok){document.querySelectorAll('.slot').forEach((e,i)=>{if(slots[i]!==expected[i]){e.classList.add('wrong');setTimeout(()=>e.classList.remove('wrong'),350)}});showToast('链路顺序不对：先得到预测，再计算误差，最后才能更新参数。');addLog('<strong>接线失败</strong>：训练链路顺序错误','warn');return}
+ stage='manual';document.querySelectorAll('.slot').forEach(e=>e.classList.add('correct'));document.querySelectorAll('.remove').forEach(e=>e.remove());
+ $('connectBtn').disabled=true;$('builderHelp').textContent='计算图已锁定。现在不要跳过任何一步：从 Forward 开始，亲手走完训练循环。';
+ $('stageLabel').textContent='阶段 2 · 单步训练';$('statusText').textContent='已接通'; setMission(2); setPhase(0);addLog('<strong>计算图已接通</strong>。参数仍然很差，开始训练。','ok');renderTrace();updateUI();
+}
+function setMission(n){for(let i=1;i<=3;i++){const el=$('mission'+i);el.className='step'+(i<n?' done':i===n?' active':'');el.querySelector('.n').textContent=i<n?'✓':i}}
+function setPhase(p){phase=p;const ids=['forwardBtn','lossBtn','backwardBtn','updateBtn'];ids.forEach((id,i)=>{const b=$(id);b.disabled=stage==='build'||i!==p;b.classList.toggle('ready',stage!=='build'&&i===p);b.classList.toggle('done',stage!=='build'&&i<p)});}
+function selectedCalc(){const [x1,x2,y]=dataset[selected],z=x1*w[0]+x2*w[1]+bias,p=sigmoid(z),loss=-(y*Math.log(Math.max(p,1e-9))+(1-y)*Math.log(Math.max(1-p,1e-9)));return{x1,x2,y,z,p,loss}}
+$('forwardBtn').onclick=()=>{
+ const s=selectedCalc();lastForward={...s};lastLoss=null;lastGrad=null;setPhase(1);renderTrace('forward');addLog('Forward：样本得到预测概率 <strong>p='+s.p.toFixed(3)+'</strong>');pulseBoundary()
+}
+$('lossBtn').onclick=()=>{
+ const s=selectedCalc(),m=evaluate();lastLoss={sample:s.loss,avg:m.loss};setPhase(2);renderTrace('loss');addLog('Loss：全体样本平均误差 <strong>'+m.loss.toFixed(3)+'</strong>');
+}
+$('backwardBtn').onclick=()=>{
+ const m=evaluate();lastGrad=m.grad;setPhase(3);renderTrace('backward');addLog('Backward：得到 ∂L/∂W 和 ∂L/∂b。');drawChart(true)
+}
+$('updateBtn').onclick=()=>{
+ const before=[...w,bias],m=evaluate();prevLoss=m.loss;w[0]-=lr*m.grad[0];w[1]-=lr*m.grad[1];bias-=lr*m.grad[2];updates++;manualCycles++;
+ lastGrad=m.grad;setPhase(0);renderTrace('update',before);updateUI();drawChart();addLog('Update：参数沿梯度反方向移动了一步。','ok');
+ if(manualCycles===3){$('autoBtn').disabled=false;$('autoBtn').textContent='连续训练 × 10';$('stageLabel').textContent='阶段 3 · 让模型学会';setMission(3);showToast('连续训练已解锁。你仍可继续逐步训练。')}
+ diagnose();checkVictory();
+}
+$('autoBtn').onclick=()=>{
+ if(manualCycles<3)return;
+ for(let k=0;k<10;k++){const m=evaluate();prevLoss=m.loss;w[0]-=lr*m.grad[0];w[1]-=lr*m.grad[1];bias-=lr*m.grad[2];updates++}
+ updateUI();drawChart();renderTrace();addLog('连续训练 10 次：边界继续被梯度推动。','ok');diagnose();checkVictory();
+}
+function diagnose(){
+ const m=evaluate();
+ if(prevLoss!=null&&m.loss>prevLoss+.03)addLog('<strong>诊断：</strong> Loss 反而升高。学习率可能过大。','warn');
+ else if(updates>=10&&lr<.05)addLog('<strong>诊断：</strong> 参数移动极慢。尝试提高学习率。','warn');
+ else if(m.acc>.9&&m.loss>.25)addLog('分类基本正确，但模型仍不够确信；继续降低 Loss。');
+}
+function checkVictory(){
+ const m=evaluate(); if(!victoryShown&&m.acc>=.94&&m.loss<=.25){victoryShown=true;setMission(4);$('stageLabel').textContent='第一关完成';$('statusText').textContent='达标';$('finalAcc').textContent=(m.acc*100).toFixed(1)+'%';$('finalLoss').textContent=m.loss.toFixed(3);$('finalSteps').textContent=updates;$('victoryOverlay').classList.remove('hidden');}
+}
+function updateUI(){
+ const m=evaluate();$('accValue').textContent=(m.acc*100).toFixed(1)+'%';$('lossValue').textContent=m.loss.toFixed(3);$('w1Value').textContent=fmt(w[0]);$('w2Value').textContent=fmt(w[1]);$('bValue').textContent=fmt(bias);$('cycleChip').textContent='更新 '+updates+' 次';
+ $('accMetric').classList.toggle('good',m.acc>=.94);$('lossMetric').classList.toggle('good',m.loss<=.25);$('chartBadge').textContent='当前决策边界 · Accuracy '+(m.acc*100).toFixed(1)+'%';
+}
+function renderTrace(hot='',before=null){
+ const s=selectedCalc(),m=evaluate();$('sampleX').textContent='['+s.x1.toFixed(2)+', '+s.x2.toFixed(2)+']';$('sampleY').textContent=s.y;
+ if(stage==='build'){$('traceBody').innerHTML='<div class="trace-empty">接通计算图后，从一个样本开始逐步观察它如何穿过网络。</div>';return}
+ let html='';
+ html+=card('forward','Linear → Sigmoid','z = x₁w₁ + x₂w₂ + b','z = <span class="value">'+s.z.toFixed(4)+'</span>　p = <span class="value">'+s.p.toFixed(4)+'</span>');
+ if(lastLoss||phase>2||hot==='update')html+=card('loss','BCE Loss','L = −[y ln p + (1−y) ln(1−p)]','样本 L = <span class="value">'+s.loss.toFixed(4)+'</span>　平均 L = '+m.loss.toFixed(4));
+ if(lastGrad||hot==='update')html+=card('backward','Gradient','∇θ L','dw = ['+lastGrad.slice(0,2).map(x=>x.toFixed(4)).join(', ')+']<br>db = '+lastGrad[2].toFixed(4));
+ if(hot==='update'&&before)html+=card('update','SGD Update','θ ← θ − η∇θ','w₁ '+before[0].toFixed(3)+' → <span class="value">'+w[0].toFixed(3)+'</span><br>w₂ '+before[1].toFixed(3)+' → <span class="value">'+w[1].toFixed(3)+'</span>');
+ $('traceBody').innerHTML=html;
+}
+function card(type,label,formula,value){return '<div class="trace-card '+(type?'hot':'')+'"><div class="label">'+label+'</div><div class="formula">'+formula+'<br>'+value+'</div></div>'}
+function drawChart(showGrad=false){
+ const c=$('chart'),rect=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;c.width=rect.width*dpr;c.height=rect.height*dpr;const ctx=c.getContext('2d');ctx.scale(dpr,dpr);const W=rect.width,H=rect.height,pad=28;
+ const sx=x=>pad+(x+1.55)/3.1*(W-pad*2), sy=y=>H-pad-(y+1.35)/2.8*(H-pad*2);
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#07131a';ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle='rgba(100,150,170,.12)';ctx.lineWidth=1;for(let v=-1;v<=1.01;v+=.5){ctx.beginPath();ctx.moveTo(sx(v),pad);ctx.lineTo(sx(v),H-pad);ctx.stroke();ctx.beginPath();ctx.moveTo(pad,sy(v));ctx.lineTo(W-pad,sy(v));ctx.stroke()}
+ ctx.strokeStyle='rgba(130,170,185,.28)';ctx.beginPath();ctx.moveTo(sx(0),pad);ctx.lineTo(sx(0),H-pad);ctx.stroke();ctx.beginPath();ctx.moveTo(pad,sy(0));ctx.lineTo(W-pad,sy(0));ctx.stroke();
+ if(Math.abs(w[1])>.0001){const xA=-1.55,xB=1.55,yA=-(w[0]*xA+bias)/w[1],yB=-(w[0]*xB+bias)/w[1];ctx.strokeStyle='#b79cff';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(sx(xA),sy(yA));ctx.lineTo(sx(xB),sy(yB));ctx.stroke();ctx.setLineDash([])}
+ else {const x=-bias/w[0];ctx.strokeStyle='#b79cff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx(x),pad);ctx.lineTo(sx(x),H-pad);ctx.stroke()}
+ dataset.forEach(([x,y,label],i)=>{ctx.beginPath();ctx.arc(sx(x),sy(y),i===selected?6:4,0,Math.PI*2);ctx.fillStyle=label?'#58d7ff':'#ffbd5a';ctx.globalAlpha=.92;ctx.fill();ctx.globalAlpha=1;if(i===selected){ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;ctx.stroke()}});
+ if(showGrad&&lastGrad){const cx=W-75,cy=H-55;ctx.strokeStyle='#5ce0a0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx-lastGrad[0]*70,cy+lastGrad[1]*70);ctx.stroke();ctx.fillStyle='#8ccfb0';ctx.font='10px system-ui';ctx.fillText('∇W',cx-6,cy-10)}
+}
+function pulseBoundary(){const badge=$('chartBadge');badge.style.color='#58d7ff';setTimeout(()=>badge.style.color='',400)}
+$('chart').addEventListener('click',e=>{const c=e.currentTarget,r=c.getBoundingClientRect(),pad=28,sx=x=>pad+(x+1.55)/3.1*(r.width-pad*2),sy=y=>r.height-pad-(y+1.35)/2.8*(r.height-pad*2);let best=Infinity,idx=selected;dataset.forEach((p,i)=>{const d=(sx(p[0])-(e.clientX-r.left))**2+(sy(p[1])-(e.clientY-r.top))**2;if(d<best){best=d;idx=i}});if(best<500){selected=idx;lastForward=null;lastLoss=null;lastGrad=null;if(stage!=='build')setPhase(0);renderTrace();drawChart()}});
+$('lrSlider').oninput=e=>{lr=+e.target.value;$('lrValue').textContent=lr.toFixed(2);if(lr>2.5)showToast('高学习率：观察 Loss 是否开始震荡。')};
+$('startBtn').onclick=()=>{$('introOverlay').classList.add('hidden');addLog('训练器上线。先重建训练链路。');};
+$('experimentBtn').onclick=()=>{$('victoryOverlay').classList.add('hidden');$('modeChip').textContent='自由实验';$('modeChip').classList.remove('live')};
+$('resetBtn').onclick=()=>location.reload();
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const map={f:'forwardBtn',l:'lossBtn',b:'backwardBtn',u:'updateBtn'};const id=map[e.key.toLowerCase()];if(id&&!$(id).disabled)$(id).click()});
+window.addEventListener('resize',drawChart);
+renderSlots();updateUI();drawChart();setPhase(0);
+</script>
+</body>
+</html>
