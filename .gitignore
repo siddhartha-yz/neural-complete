@@ -2,4 +2,6 @@
 preview-tunnel.log
 first-level-validated.png
 rebuild-*.png
+validation-*.png
+five-smoke.png
 __pycache__/

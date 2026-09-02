@@ -1,174 +1,51 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Neural Complete — P-01 人工神经元</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Neural Complete — Five Learning Machines</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-<div id="app" class="app">
-  <header class="topbar">
-    <div class="brand">
-      <div class="mark" aria-hidden="true"><span></span><span></span><span></span></div>
-      <div><strong>NEURAL COMPLETE</strong><small>BUILD · SIMULATE · DEBUG</small></div>
-    </div>
-    <div class="level-id"><span>PUZZLE</span><b>P-01</b><em>人工神经元</em></div>
-    <div class="top-actions">
-      <button id="undoBtn" class="tool-btn" title="撤销 Ctrl+Z" disabled>↶ 撤销</button>
-      <button id="resetBtn" class="tool-btn danger" title="清空当前设计">清空设计</button>
-    </div>
-  </header>
-
-  <main class="layout">
-    <aside class="mission panel">
-      <div class="section-label">LEVEL CONTRACT</div>
-      <h1>让它决定何时“点亮”</h1>
-      <p class="lead">两个传感器输入连续数值。你的电路必须把它们变成一个 <b>0 / 1</b> 决策。</p>
-
-      <div class="rule-card">
-        <div class="rule-head"><span>目标行为</span><span class="tag">BLACK BOX</span></div>
-        <p>传感器 A 是正证据，传感器 B 会抑制它。不同输入强度下，输出必须符合测试台给出的结果。</p>
-      </div>
-
-      <div class="concept-strip">
-        <span>你拥有的原语</span>
-        <div><b>×</b> 缩放信号</div>
-        <div><b>+</b> 合并信号</div>
-        <div><b>C</b> 常数</div>
-        <div><b>Θ</b> 阈值化</div>
-      </div>
-
-      <div class="section-label spaced">BUILD RULES</div>
-      <ul class="rules">
-        <li>从元件仓拖入画布，自由摆放。</li>
-        <li>点击输出端口，再点击输入端口完成接线。</li>
-        <li>常数元件的数值由你决定。</li>
-        <li>没有规定解法；只看测试是否通过。</li>
-      </ul>
-
-      <button id="hintBtn" class="hint-btn" disabled>
-        <span>?</span><div><b>请求提示</b><small id="hintMeta">运行失败 2 次后解锁</small></div>
+  <div class="shell">
+    <header class="topbar">
+      <button class="brand" id="homeBtn" aria-label="返回实验选择">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <span><b>NEURAL COMPLETE</b><small>FIVE LEARNING MACHINES</small></span>
       </button>
-      <div id="hintText" class="hint-text hidden"></div>
-    </aside>
-
-    <section class="workbench panel">
-      <div class="workbench-head">
-        <div>
-          <span class="section-label">NEURAL WORKBENCH</span>
-          <b id="boardStatus">未接通</b>
-        </div>
-        <div class="bench-actions">
-          <button id="wireCancelBtn" class="mini-btn hidden">取消接线 Esc</button>
-          <button id="centerBtn" class="mini-btn">整理视图</button>
-        </div>
+      <div class="top-center" id="topCenter">选择一个实验</div>
+      <div class="top-actions">
+        <button class="ghost-btn" id="aboutBtn">原理</button>
+        <button class="ghost-btn danger" id="globalResetBtn">重置当前</button>
       </div>
+    </header>
 
-      <div id="board" class="board" tabindex="0" aria-label="神经元构造画布">
-        <svg id="wireLayer" class="wire-layer" aria-hidden="true"></svg>
-        <div class="board-note" id="boardNote">
-          <b>从下方元件仓拖入原语</b>
-          <span>构造属于你的计算图</span>
-        </div>
-        <div id="nodeLayer" class="node-layer"></div>
-        <div class="board-coordinates"><span>0</span><span>X</span><span>Y</span></div>
-      </div>
+    <main id="app" class="app"></main>
 
-      <div class="palette-wrap">
-        <div class="palette-head">
-          <div><span class="section-label">PARTS BIN</span><small>数量有限 · 用完即止</small></div>
-          <div class="wiring-help"><i></i><span id="wireHelp">点击任意输出端口开始接线</span></div>
-        </div>
-        <div id="palette" class="palette"></div>
-        <div id="compiledShelf" class="compiled-shelf hidden">
-          <span class="section-label">COMPILED COMPONENT</span>
-          <div class="compiled-chip" title="拖入画布复用"><span class="chip-icon">N</span><div><b>NEURON_01</b><small>2 inputs · 1 output · 拖入画布复用</small></div><em>UNLOCKED</em></div>
-        </div>
-      </div>
-    </section>
+    <footer class="statusbar">
+      <div><span class="live-dot"></span><b>LOCAL NUMERICAL RUNTIME</b></div>
+      <div id="statusText">所有训练都在浏览器内真实计算</div>
+      <div id="buildMeta">5 demos · no external ML library</div>
+    </footer>
+  </div>
 
-    <aside class="side panel">
-      <div class="tabs">
-        <button class="tab active" data-tab="tests">测试台</button>
-        <button class="tab" data-tab="inspect">检查器</button>
-      </div>
-
-      <div id="testsTab" class="tab-pane active">
-        <div class="tester-head">
-          <div><span class="section-label">TEST BENCH</span><b id="testSummary">0 / 6</b></div>
-          <button id="stepTestBtn" class="mini-btn">下一例 ▶</button>
-        </div>
-        <div id="testRows" class="test-list"></div>
-
-        <div class="verify-box">
-          <div class="verify-copy">
-            <span>VERIFICATION</span>
-            <b id="verifyTitle">额外校验 × 4</b>
-            <small id="verifyMeta">先通过上方 6 个公开测试</small>
-          </div>
-          <button id="verifyBtn" class="verify-btn" disabled>验证设计</button>
-        </div>
-
-        <div class="signal-monitor">
-          <div class="monitor-head"><span>LIVE SIGNALS</span><b id="activeCaseLabel">CASE —</b></div>
-          <div class="io-readout">
-            <div><span>x₁</span><b id="ioX1">—</b></div>
-            <div><span>x₂</span><b id="ioX2">—</b></div>
-            <div class="arrow">→</div>
-            <div><span>ŷ</span><b id="ioY">—</b></div>
-          </div>
-          <div id="simMessage" class="sim-message">选择测试例或运行测试，让信号流过你搭出的电路。</div>
-        </div>
-
-        <button id="runAllBtn" class="run-btn"><span>▶</span><div><b>运行公开测试</b><small>逐例传播并检查输出</small></div></button>
-      </div>
-
-      <div id="inspectTab" class="tab-pane">
-        <div class="inspector-empty" id="inspectorEmpty">
-          <div class="empty-glyph">⌖</div>
-          <b>选择一个元件或导线</b>
-          <span>查看端口、参数与当前信号值。</span>
-        </div>
-        <div id="inspectorContent" class="inspector-content hidden"></div>
-      </div>
-    </aside>
-  </main>
-
-  <footer class="statusbar">
-    <div><span class="status-dot"></span><b id="footerStatus">EDIT MODE</b></div>
-    <div class="shortcuts"><span>拖拽：移动</span><span>Del：删除</span><span>Esc：取消接线</span><span>Ctrl+Z：撤销</span></div>
-    <div id="partCount">0 components · 0 wires</div>
-  </footer>
-</div>
-
-<div id="intro" class="overlay">
-  <div class="modal intro-modal">
-    <span class="eyebrow">NEURAL COMPLETE / PUZZLE 01</span>
-    <h2>不要“调用”一个神经元。<br>先把它造出来。</h2>
-    <p>这里没有 Train 按钮，也没有替你接好的网络。你只有原始计算元件、输入输出端口和一组必须满足的测试。</p>
-    <div class="intro-grid">
-      <div><b>01</b><span>拖入原语</span><small>自己决定结构与参数</small></div>
-      <div><b>02</b><span>接线</span><small>让数值真的在图中传播</small></div>
-      <div><b>03</b><span>跑测试</span><small>失败就沿着信号回去调试</small></div>
+  <dialog id="aboutDialog" class="about-dialog">
+    <div class="dialog-head">
+      <div><span>NEURAL COMPLETE</span><h2>这次真正让参数从数据里学出来。</h2></div>
+      <button id="closeAbout" class="icon-btn" aria-label="关闭">×</button>
     </div>
-    <button id="enterBtn" class="primary-btn">进入工作台</button>
-  </div>
-</div>
+    <p>五个实验分别覆盖监督学习、非线性表示学习、卷积特征学习、无监督表示学习与强化学习。每个实验都运行真实的数值优化或策略更新，不是预制动画。</p>
+    <div class="about-grid">
+      <div><b>01</b><span>Logistic Regression</span><small>梯度下降 · 特征工程 · 泛化</small></div>
+      <div><b>02</b><span>MLP + Backprop</span><small>隐藏层 · 激活函数 · 非线性</small></div>
+      <div><b>03</b><span>Convolution</span><small>可学习卷积核 · 特征图 · 池化</small></div>
+      <div><b>04</b><span>Autoencoder</span><small>瓶颈 · 重构 · 潜在空间</small></div>
+      <div><b>05</b><span>Q-Learning</span><small>奖励 · 探索 · 策略收敛</small></div>
+    </div>
+  </dialog>
 
-<div id="victory" class="overlay hidden">
-  <div class="modal victory-modal">
-    <span class="eyebrow success">ALL TESTS PASSED</span>
-    <h2>你刚刚造出了一个神经元。</h2>
-    <p>把你搭出的原语压缩成一个新的积木。之后的关卡不再要求你重复内部细节——这就是抽象。</p>
-    <div class="equation"><span>inputs</span><b>→</b><strong>Σ(wᵢxᵢ) + b</strong><b>→</b><strong>Θ</strong><b>→</b><span>0 / 1</span></div>
-    <div id="victoryStats" class="victory-stats"></div>
-    <button id="compileBtn" class="primary-btn success-btn">封装为 NEURON_01</button>
-    <button id="stayBtn" class="text-btn">先留在画布继续观察</button>
-  </div>
-</div>
-
-<div id="toast" class="toast"></div>
-<script src="./app.js"></script>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
